@@ -1,0 +1,13 @@
+{
+  "Statement": [
+    {
+      "Action": [
+        "oss:GetObject",
+        "oss:ListObjects"
+      ],
+      "Effect": "Allow",
+      "Resource": ["acs:oss:*:*:anchongres/*", "acs:oss:*:*:anchongres"]
+    }
+  ],
+  "Version": "1"
+}

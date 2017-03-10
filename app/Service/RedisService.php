@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Tools;
+namespace App\Service;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Redis;
  * @package App\Http\Controllers\Tools
  * 提供各种操作redis不同类型的操作
  */
-class RedisTool
+class RedisService
 {
 
     private $newestArticlesUUIDlist = 'newestArticlesUUID';
