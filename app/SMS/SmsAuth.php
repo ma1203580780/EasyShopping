@@ -7,30 +7,12 @@ use Cache;
 *   使用方法:为手机短信验证服务
 */
 class smsAuth {
-    /**
-    *   生成手机验证码
-    *   常用短信模板：
-     * 	系统身份验证验证码	SMS_47520070    *
-     *
-    -	系统短信测试	    SMS_47520069
-     *
-    -	系统登录确认验证码	SMS_47520068	*
-     *
-    -	系统登录异常验证码	SMS_47520067
-     *
-    -	系统用户注册验证码	SMS_47520066	*
-     *
-    -	系统活动确认验证码	SMS_47520065
-     *
-    -	系统修改密码验证码	SMS_47520064	*
-     *
-    -	系统信息变更验证码	SMS_47520063
-    */
+
     public function smsAuth($action, $phone)
     {
         //阿里大鱼的两个key
-        $appkey='23640405';
-        $secretkey='c7c2560bf0487357c6bc3146acc937d8';
+        $appkey='23672242';
+        $secretkey='3cdae461d260249d39dee509887edee2';
         //创建短信验证类
         $alisms = new \App\SMS\AliSms($appkey, $secretkey, '', '');
         //生成随机的验证码
@@ -39,17 +21,17 @@ class smsAuth {
         $smsarr=array();
         //判断用户行为
         switch ($action) {
-            case '注册验证':
-                $smsarr=['data' => ['code' => strval($code), 'product' => '超牛平台'], 'code' => 'SMS_47520066'];
+            case '身份认证':
+                $smsarr=['data' => ['code' => strval($code)], 'code' => 'SMS_53675005'];
                 break;
-            case '变更验证':
-                $smsarr=['data' => ['code' => strval($code), 'product' => '超牛平台'], 'code' => 'SMS_47520064'];
+            case '变更密码':
+                $smsarr=['data' => ['code' => strval($code)], 'code' => 'SMS_53530027'];
                 break;
-            case '登录验证':
-                $smsarr=['data' => ['code' => strval($code), 'product' => '超牛平台'], 'code' => 'SMS_47520068'];
+            case '登录':
+                $smsarr=['data' => ['code' => strval($code)], 'code' => 'SMS_53665036'];
                 break;
-            case '身份验证':
-                $smsarr=['data' => ['code' => strval($code), 'product' => '超牛平台'], 'code' => 'SMS_47520070'];
+            case '注册':
+                $smsarr=['data' => ['code' => strval($code)], 'code' => 'SMS_53595034'];
                 break;
             default:
                 return '数据出错,发送失败！';
@@ -65,8 +47,7 @@ class smsAuth {
                 return [false,'发送失败，'.$value['sub_msg'].'，请重新发送！'];
             }elseif($key == 'alibaba_aliqin_fc_sms_num_send_response' && $value['result']['success'] == '1'){
 //                Cache::put($phone.$action, $code ,10);
-                cache([$phone.$action => $code], 30);//用于设置缓存值    有效期为30分钟
-//                cache([$phone."validity"=>1],1);     //用户请求验证短信  有效期为1分钟
+                cache(["STRING:USER:".$phone.":".$action => $code], 30);//用于设置缓存值    有效期为30分钟
                 return [true,'发送成功'];
             }else{
                 return [false,'发送失败，请重新发送！'];

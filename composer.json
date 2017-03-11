@@ -6,6 +6,7 @@
     "type": "project",
     "require": {
         "php": ">=5.6.4",
+        "gregwar/captcha": " ^1.1",
         "iscms/alisms-for-laravel": "^0.0.3",
         "johnlui/aliyun-oss": "^1.3",
         "laravel/framework": "5.3.*",
