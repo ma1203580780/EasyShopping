@@ -20,11 +20,10 @@ use App\Store\UserLoginStore;
 
 class HomeController extends Controller
 {
-    //用户发表每日心情
-    public function index(Request $request)
+    //首页
+    public function index()
     {
-
-        return view('home.index');
+        return redirect('/blog');
     }
 
 

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 class UserStore
 {
     //表名
-    private static $table = 'users';
+    private static $table = 'data_users';
 
 
     public static function userInsert($param){
@@ -24,12 +24,6 @@ class UserStore
         if(empty($where)) return false;
         return DB::table(self::$table)->where($where)->first();
     }
-
-    public static function getInfo($where){
-        if(empty($where)) return false;
-        return DB::table(self::$table)->where($where)->first();
-    }
-
     /**
      * @param $where
      * @param $param

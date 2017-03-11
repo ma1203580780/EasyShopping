@@ -92,7 +92,7 @@ class UserController extends Controller
         ];
         $result = UserStore::userInsert($param);
         if($result){
-            return Redirect('/');
+            return Redirect('/login');
              }else{
             return back()->withErrors('未知错误..');
               }
@@ -153,7 +153,7 @@ class UserController extends Controller
          }
         //判断密码是否正确
         if($userInfo->password == CommonService::passMcrypt($password)){
-            session(['loginInfo'=>['phone'=>$param['phone'],'star'=>$userInfo->star]]);
+            session(['loginInfo'=>['phone'=>$param['phone'],'star'=>$userInfo->star,'guid'=>$userInfo->guid]]);
             return Redirect('/');
         }else{
             return back()->withErrors('密码错误..');

@@ -18,6 +18,8 @@ Route::group(['namespace' => 'User'], function(){
     Route::post('/register','UserController@register');
 });
 
+
+//中间件验证登录
 Route::group(['middleware' => 'UserMiddleware'], function () {
 
     //首页
@@ -36,7 +38,33 @@ Route::group(['middleware' => 'UserMiddleware'], function () {
         Route::resource('/pwd','UserController@pwd');
     });
 
+    Route::group(['namespace' => 'Blog'], function(){
+        //管理
+        Route::resource('/blog','BlogController');
+        //禁用
+        Route::resource('/blog/status/{{id}}/','BlogController@status');
+        //HTML直传
+        Route::resource('/news_upload', 'BlogController@upload');
+    });
+
 });
+
+Route::get('/admin/login','Admin\AdminController@login');
+Route::post('/adminLogin','Admin\AdminController@adminLogin');
+
+    // 后台中间件验证登录
+Route::group(['middleware' => 'AdminMiddleware'], function () {
+
+    Route::group(['namespace' => 'Admin'], function(){
+        //管理
+        Route::resource('/admin','AdminController');
+
+    });
+
+});
+
+
+
 
 
 
