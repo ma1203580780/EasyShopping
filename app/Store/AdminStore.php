@@ -13,7 +13,7 @@ class AdminStore
 {
     //表名
     private static $table = 'data_admin';
-
+    private static $limit = 10;
 
     public static function adminInsert($param){
         if(empty($param)) return false;
@@ -33,6 +33,14 @@ class AdminStore
     public static function adminUpdate($where,$param){
         if(empty($param)) return false;
         return DB::table(self::$table)->where($where)->update($param);
+    }
+
+    public static function getAll($page,$where=[]){
+        //每页取几条数据
+        $limit = self::$limit;
+        //偏移量
+        $start = ($page-1)*$limit;
+        return DB::table(self::$table)->where($where)->skip($start)->take($limit)->get();
     }
 
 

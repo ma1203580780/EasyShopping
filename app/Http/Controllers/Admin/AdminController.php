@@ -17,7 +17,7 @@ class AdminController extends Controller
     //后台首页
     public function index()
     {
-          return "后台首页";
+        return redirect('/personnel');
     }
 
     public function login(){

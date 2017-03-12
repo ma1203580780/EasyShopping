@@ -9,13 +9,13 @@ namespace App\Store;
 
 use Illuminate\Support\Facades\DB;
 
-class BlogStore
+class GoodStore
 {
     //表名
-    private static $table = 'data_blog';
-    private static $limit = 10;
+    private static $table = 'data_good';
+    private static $limit = 20;
 
-    public static function blogInsert($param){
+    public static function goodInsert($param){
         if(empty($param)) return false;
         return DB::table(self::$table)->insert($param);
     }
@@ -25,7 +25,7 @@ class BlogStore
         return DB::table(self::$table)->where($where)->first();
     }
 
-    public static function blogUpdate($where,$param){
+    public static function goodUpdate($where,$param){
         if(empty($param)) return false;
         return DB::table(self::$table)->where($where)->update($param);
     }

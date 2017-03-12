@@ -25,26 +25,11 @@ Route::group(['middleware' => 'UserMiddleware'], function () {
     //首页
     Route::resource('/','Home\HomeController');
 
-    Route::group(['namespace' => 'User'], function(){
-        //找回密码
-        Route::resource('/retrievePwd','UserController@retrievePwd');
-        //用户信息管理
-        Route::resource('/userInfo','UserController@userInfo');
-        //用户头像上传
-        Route::resource('/upload','UserController@upload');
-        //OSS密钥
-        Route::resource('/sts','UserController@sts');
-        //修改密码
-        Route::resource('/pwd','UserController@pwd');
-    });
-
-    Route::group(['namespace' => 'Blog'], function(){
+    Route::group(['namespace' => 'Good'], function(){
         //管理
-        Route::resource('/blog','BlogController');
+        Route::resource('/good','GoodController');
         //禁用
-        Route::resource('/blog/status/{{id}}/','BlogController@status');
-        //HTML直传
-        Route::resource('/news_upload', 'BlogController@upload');
+        Route::resource('/good/status/{{id}}/','GoodController@status');
     });
 
 });
@@ -58,6 +43,10 @@ Route::group(['middleware' => 'AdminMiddleware'], function () {
     Route::group(['namespace' => 'Admin'], function(){
         //管理
         Route::resource('/admin','AdminController');
+        //人员管理
+        Route::resource(' /personnel','PersonnelController');
+        //禁用
+        Route::resource('/personnel/status/{{id}}/','PersonnelController@status');
 
     });
 
