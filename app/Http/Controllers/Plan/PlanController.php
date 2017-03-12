@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Plan;
 
+use App\Service\TxService;
 use App\Services\CommonService;
 use App\Store\GoodStore;
 use App\Store\PlanStore;
@@ -72,17 +73,27 @@ class PlanController extends Controller
             $rel[$k] = RelPlanStore::getFirst(['plan_guid'=>$data['plan_guid'],'master_good_id'=>$v]);
 
             //商品单价
-            $p = GoodStore::getFirst(['id'=>$v]);   $price[$k] = $p->price;
+            $p = GoodStore::getFirst(['id'=>$v]);   $price[$v] = $p->price;//[good_id=>price]
 
             //单件商品加一起的价格
             $oneGoodSum = $p->price+$oneGoodSum;
 
             //最终各种商品购买数量的结果集
-            $buyResult[$k] = 1;
+            $buyResult[$v] = 1;
 
         }
+//        dd($price);
+        $x =[];
+        foreach($price as  $k=>$v){
+            $x[]=[
+                'good_id'=>$k,
+                'price'=>$v,
+                'weight'=>1
+            ];
+        }
+        dd($x);
         //每样都购买一件，余额为：
-        $yue = $data['pay']-$oneGoodSum;
+        $yue = ($data['pay']*100)-$oneGoodSum;
         if($yue < 0){
             return json_encode('预算不足以购买最低件数的指定商品！');
         }
@@ -95,10 +106,62 @@ class PlanController extends Controller
             //因为已选商品至少买一件，因此单件商品最多购买数为
             $singleNumMax = $data['goods_count_max']+1-$goodCate;
             //单件商品最小购买数为1
+//         dd($buyResult);
+         //每件商品购买的数量和价格
+//        foreach($buyResult as $k=>$v){
+//            $buyResult[$k]=array();
+//
+//            for($i=0;$i<$singleNumMax;$i++){
+//                $buyResult[$k][$i] = $price[$k]*$i;
+//            }
+//        }
+//        $money = 0;//实际金额(累加计算)
+//        $echo = '';
+//        foreach($buyResult as $k=>$v){
+//            for($i=0;$i<$singleNumMax;$i++){
+//
+//                $money = $money+$v[$i];
+//                if($money<$yue){
+//                    $echo =$echo.'good_id='.$k."加一次,可行！<br>";
+//                }
+//
+//            }
+//        }
+//
+//         echo $echo;
+//        dd($buyResult);
 
-
-        foreach($buyResult as $v){
-
-        }
+//        $this->tanxin($x,$data['pay']*100);
     }
+
+    function tanxin($x,$totalweight=50)
+    {
+        $len=count($x);
+        $allprice=0;
+        for($i=1;$i<=$len;$i++){
+            if($x[$i]->weight>$totalweight) break;
+            else{
+                $allprice+=$x[$i]->price;
+                $totalweight=$totalweight-$x[$i]->weight;
+            }
+        }
+        if($i<$len) $allprice+=$x[$i]->price*($totalweight/$x[$i]->weight);
+        return $allprice;
+    }
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
