@@ -62,7 +62,7 @@
                         @if(!empty($goods))
                         @foreach($goods as $key=>$data)
                             @if($key%4 === 0) <tr> @endif
-                            <td><input type="checkbox" name = 'goods_id' value="{{$data->id}}" id="goods_id"><span  title="{{$data->price/100}}元/件">{{$data->name}}</span>&nbsp;<a href="javascript:define(good_id='{{$data->id}}',good_name='{{$data->name}}')">define</a></td>
+                            <td><input type="checkbox" name = 'goods_id' value="{{$data->id}}" id="goods_id"><span  title="{{$data->price/100}}元/件">{{$data->name}}  {{$data->price/100}}元/件</span>&nbsp;<a href="javascript:define(good_id='{{$data->id}}',good_name='{{$data->name}}')">define</a></td>
                             @if($key%4 === 3) </tr> @endif
                         @endforeach
                     </tbody>

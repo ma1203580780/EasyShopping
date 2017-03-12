@@ -64,7 +64,6 @@ class PlanController extends Controller
 //        $re = PlanStore::planInsert($in);
 
         //计算采购计划
-
         $rel = array();//单商品约束条件
         $oneGoodSum = 0;//单件商品加一起的价格
         foreach($data['chk_value'] as $k=>$v){
@@ -83,15 +82,6 @@ class PlanController extends Controller
 
         }
 //        dd($price);
-        $x =[];
-        foreach($price as  $k=>$v){
-            $x[]=[
-                'good_id'=>$k,
-                'price'=>$v,
-                'weight'=>1
-            ];
-        }
-        dd($x);
         //每样都购买一件，余额为：
         $yue = ($data['pay']*100)-$oneGoodSum;
         if($yue < 0){
@@ -101,7 +91,9 @@ class PlanController extends Controller
             $rel=array_filter($rel);
             //最大购买数
              $goods_count_max = empty($data['goods_count_max'])?10000000000:$data['goods_count_max'];
-            //商品类型数
+            //最小购买数
+            $goods_count_min = empty($data['goods_count_min'])?1:$data['goods_count_min'];
+        //商品类型数
             $goodCate = count($data['chk_value']);
             //因为已选商品至少买一件，因此单件商品最多购买数为
             $singleNumMax = $data['goods_count_max']+1-$goodCate;
@@ -110,28 +102,42 @@ class PlanController extends Controller
          //每件商品购买的数量和价格
 //        foreach($buyResult as $k=>$v){
 //            $buyResult[$k]=array();
-//
 //            for($i=0;$i<$singleNumMax;$i++){
 //                $buyResult[$k][$i] = $price[$k]*$i;
 //            }
 //        }
-//        $money = 0;//实际金额(累加计算)
-//        $echo = '';
-//        foreach($buyResult as $k=>$v){
-//            for($i=0;$i<$singleNumMax;$i++){
-//
-//                $money = $money+$v[$i];
-//                if($money<$yue){
-//                    $echo =$echo.'good_id='.$k."加一次,可行！<br>";
-//                }
-//
-//            }
-//        }
-//
-//         echo $echo;
 //        dd($buyResult);
+        /*---------------------------------------------------*/
+        //下面开启元编程
+        $commondStart = "";//for循环
+        $variable = '$j';  //变量名
+        $commondEnd = "";  //结尾括号
+        $commondSumMoney = "0"; //最终花的钱
+        $commondSNum ="0";
+        $commondNum = "0";//最终购买商品的数量
+        //循环层数为商品种类数
+        foreach($price as $k=>$v){
+            $commondStart = $commondStart."for($variable=0;$variable<$singleNumMax;$variable++){";
+            $commondEnd = $commondEnd.'}';
+            $commondSumMoney = $commondSumMoney."+$variable*$v";
+            $commondNum = $commondNum."+{$variable}";
+            $commondSNum = $commondSNum.','.$variable;
+            $variable = $variable.'j';
+        }
+        $result =array();
+        //总预算
+        $pay = $data['pay']*100;
+        //判断并处理
+        $judge = "if(($commondSumMoney) < $pay && ($commondNum) > $goods_count_min && ($commondNum) < $goods_count_max )".'{$result[]=["spend"=>'."$commondSumMoney".',"info"=>"'.$commondSNum.'"];}';
+            $commond = $commondStart.$judge.$commondEnd;
+//            dd($commond);
+        eval($commond);
 
-//        $this->tanxin($x,$data['pay']*100);
+        dd($result);
+
+
+        /*---------------------------------------------------*/
+
     }
 
     function tanxin($x,$totalweight=50)
