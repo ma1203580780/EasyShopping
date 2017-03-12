@@ -25,32 +25,23 @@ Route::group(['middleware' => 'UserMiddleware'], function () {
     //首页
     Route::resource('/','Home\HomeController');
 
+    //商品
     Route::group(['namespace' => 'Good'], function(){
         //管理
         Route::resource('/good','GoodController');
-        //禁用
-        Route::resource('/good/status/{{id}}/','GoodController@status');
+        //状态管理
+        Route::post('/status/{id}/','GoodController@status');
+    });
+    //计划
+    Route::group(['namespace' => 'Plan'], function(){
+
+    Route::resource('/plan','PlanController');
+    Route::resource('/relPlan/create','PlanController@relCreate');
     });
 
 });
 
-Route::get('/admin/login','Admin\AdminController@login');
-Route::post('/adminLogin','Admin\AdminController@adminLogin');
 
-    // 后台中间件验证登录
-Route::group(['middleware' => 'AdminMiddleware'], function () {
-
-    Route::group(['namespace' => 'Admin'], function(){
-        //管理
-        Route::resource('/admin','AdminController');
-        //人员管理
-        Route::resource(' /personnel','PersonnelController');
-        //禁用
-        Route::resource('/personnel/status/{{id}}/','PersonnelController@status');
-
-    });
-
-});
 
 
 

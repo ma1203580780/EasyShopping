@@ -39,10 +39,8 @@
                     <thead>
                       <tr>
                           <td>编号</td>
-                          <td>标题</td>
-                          <td>板块</td>
-                          <td>作者</td>
-                          <td>发布时间</td>
+                          <td>商品名</td>
+                          <td>单价(元)</td>
                           <td>状态</td>
                           <td style="text-align: center">操作</td>
                       </tr>
@@ -52,18 +50,15 @@
                         @foreach($datas as $data)
                         <tr>
                             <td>{{$data->id}}</td>
-                            <td><a href="/news/{{$data->id}}">{{$data->title}}</a></td>
-                            <td>{{$data->cate_name}}</td>
-                            <td>{{$data->author}}</td>
-                            <td>{{date('Y-m-d',$data->addtime)}}</td>
-                            <td>@if($data->status == '1') 可用 @else 禁用 @endif</td>
+                            <td>{{$data->name}}</td>
+                            <td>{{$data->price/100}}</td>
+                            <td><p id="status{{$data->id}}">@if($data->status == '1') 可用 @else 禁用 @endif</p></td>
                             <td style="text-align: center">
-                                <a href="{{url('/blog/'.$data->id."/edit")}}"><button  class="btn btn-info btn-xs">编辑</button></a>
                                 <a href="javascript:upStastus({{$data->id}})">
-                                    @if($data->status == '1')
-                                        <button  class="btn btn-default btn-xs" id = 'status'>可用</button>
+                                    @if($data->status != '1')
+                                        <button  class="btn btn-default btn-xs" id = 'good-btn-status{{$data->id}}'>可用</button>
                                     @else
-                                        <button  class="btn btn-inverse btn-xs" id = 'status'>禁用</button>
+                                        <button  class="btn btn-inverse btn-xs" id = 'good-btn-status{{$data->id}}'>禁用</button>
                                     @endif
                                 </a>
                             </td>
@@ -87,15 +82,19 @@
 @section('script')
     <script>
         function upStastus(id) {
-            var url = '/blog/status/'+id;
+            var url = '/status/'+id;
+            var btnId = '#good-btn-status'+id;
+            var goodStatus = '#status'+id;
             $.post(
                 url,
                 {},
                 function(result){
                     if(result == 1){
-                        $('#status').text('可用');
+                        $(btnId).text('禁用');
+                        $(goodStatus).text('可用');
                     }else{
-                        $('#status').text('禁用');
+                        $(btnId).text('可用');
+                        $(goodStatus).text('禁用');
                     }
 
             });

@@ -9,13 +9,13 @@ namespace App\Store;
 
 use Illuminate\Support\Facades\DB;
 
-class AdminStore
+class RelPlanStore
 {
     //表名
-    private static $table = 'data_admin';
+    private static $table = 'rel_plan';
     private static $limit = 10;
 
-    public static function adminInsert($param){
+    public static function planInsert($param){
         if(empty($param)) return false;
         return DB::table(self::$table)->insert($param);
     }
@@ -24,23 +24,14 @@ class AdminStore
         if(empty($where)) return false;
         return DB::table(self::$table)->where($where)->first();
     }
-    /**
-     * @param $where
-     * @param $param
-     * @return bool
-     * 更新信息
-     */
-    public static function adminUpdate($where,$param){
+
+    public static function planUpdate($where,$param){
         if(empty($param)) return false;
         return DB::table(self::$table)->where($where)->update($param);
     }
 
-    public static function getAll($page,$where=[]){
-        //每页取几条数据
-        $limit = self::$limit;
-        //偏移量
-        $start = ($page-1)*$limit;
-        return DB::table(self::$table)->where($where)->skip($start)->take($limit)->get();
+    public static function getAll($where=[]){
+        return DB::table(self::$table)->where($where)->orderBy('id','ASC')->get();
     }
 
 

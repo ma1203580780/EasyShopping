@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Blog;
+namespace App\Http\Controllers\Good;
 
 use App\Store\GoodStore;
 use App\Store\CateStore;
@@ -18,16 +18,9 @@ class GoodController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
-        $data = $request->all();
-        //当前页码
-        if (empty($data['nowPage'])) {
-            $nowPage = 1;
-        } else {
-            $nowPage = $data['nowPage'];
-        }
-        $result = GoodStore::getAll($nowPage);
+        $result = GoodStore::getAll();
         return view('good.index', ['datas' => $result]);
     }
 
@@ -66,13 +59,13 @@ class GoodController extends Controller
              $loginInfo = session('loginInfo');
             $param = [
                 'name'=>$input['good_name'],
-                'price' =>$input['good_price'],
+                'price' =>$input['good_price']*100,
               ];
 
             $result = GoodStore::goodInsert($param);
 
             if ($result) {
-                return Redirect('/good');
+                return Redirect('/good/create');
             }else{
                 return back()->withErrors('网络不好，再试试？');
             }
@@ -88,9 +81,10 @@ class GoodController extends Controller
      */
     public function status($id)
     {
-        $blog = BlogStore::getFirst(['id'=>$id]);
-        $up = $blog->status == 1?2:1;
-        $re = BlogStore::blogUpdate(['id'=>$id],['status'=>$up]);
+        $good = GoodStore::getFirst(['id'=>$id]);
+        //更新后的状态
+        $up = $good->status == 1?2:1;
+        $re = GoodStore::GoodUpdate(['id'=>$id],['status'=>$up]);
         if($re){
             return $up;
         }

@@ -13,7 +13,7 @@ class GoodStore
 {
     //表名
     private static $table = 'data_good';
-    private static $limit = 20;
+    private static $limit = 10;
 
     public static function goodInsert($param){
         if(empty($param)) return false;
@@ -30,12 +30,8 @@ class GoodStore
         return DB::table(self::$table)->where($where)->update($param);
     }
 
-    public static function getAll($page,$where=[]){
-        //每页取几条数据
-        $limit = self::$limit;
-        //偏移量
-        $start = ($page-1)*$limit;
-        return DB::table(self::$table)->where($where)->orderBy('id','DESC')->skip($start)->take($limit)->get();
+    public static function getAll($where=[]){
+        return DB::table(self::$table)->where($where)->orderBy('id','ASC')->get();
     }
 
 
