@@ -37,6 +37,9 @@ Route::group(['middleware' => 'UserMiddleware'], function () {
 
     Route::resource('/plan','PlanController');
     Route::resource('/relPlan/create','PlanController@relCreate');
+    //递归测试
+    Route::resource('/digui/{forNum}/{$singleNumMax}/','PlanController@digui');
+        Route::resource('/d/{goodCate}/{singleNumMax}/','PlanController@firstGet');
     });
 
 });
