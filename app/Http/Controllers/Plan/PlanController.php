@@ -31,8 +31,8 @@ class PlanController extends Controller
 
         $insert =[
             'plan_guid'=>$data['plan_guid'],  //关联采购计划id
-            'good_count_min'=>$data['good_count_min'],  //采购最小量
-            'good_count_max'=>$data['good_count_max'],  //采购最大量
+            'good_count_min'=>empty($data['good_count_min'])?1:$data['good_count_min'],  //采购最小量
+            'good_count_max'=>empty($data['good_count_max'])?1000:$data['good_count_max'],  //采购最大量
             'master_good_id'=>$data['master_good_id'],  //主商品good_id
             'rel_good_id'=>$data['rel_good_id'],        //关联商品good_id
             'proportion'=>$data['master_good_num']."/".$data['rel_good_num'], //购买比例
@@ -46,6 +46,22 @@ class PlanController extends Controller
         }
     }
 
+    /**
+     * @param $data
+     * @return bool
+     * 向data_plan表插入数据
+     */
+    public function insertDataPlan($data){
+        $in =[
+            'guid'=>$data['plan_guid'],  //采购计划guid
+            'pay'=>$data['pay']*100,  //预算(单位：分)
+            'goods_count_max'=>$data['goods_count_max'],  //采购最大量
+            'goods_count_min'=>$data['goods_count_min'],  //采购最小量
+        ];
+        //将计划信息存储到数据库
+        return PlanStore::planInsert($in);
+    }
+
     //采购计划制定
     public function store(Request $request)
     {
@@ -54,15 +70,9 @@ class PlanController extends Controller
         if($data['goods_count_max'] < count($data['chk_value'])){
             return json_encode('件数错误！');
         }
+
         //整理数据
-//        $in =[
-//            'guid'=>$data['plan_guid'],  //采购计划guid
-//            'pay'=>$data['pay']*100,  //预算(单位：分)
-//            'goods_count_max'=>$data['goods_count_max'],  //采购最大量
-//            'goods_count_min'=>$data['goods_count_min'],  //采购最小量
-//        ];
-//        //将计划信息存储到数据库
-//        $re = PlanStore::planInsert($in);
+
 
         //计算采购计划
         $rel = array();//单商品约束条件
@@ -92,10 +102,11 @@ class PlanController extends Controller
              $goods_count_max = empty($data['goods_count_max'])?10000000000:$data['goods_count_max'];
             //最小购买数
             $goods_count_min = empty($data['goods_count_min'])?1:$data['goods_count_min'];
-        //商品类型数
+            //商品类型数
             $goodCate = count($data['chk_value']);
             //因为已选商品至少买一件，因此单件商品最多购买数为
             $singleNumMax = $data['goods_count_max']+1-$goodCate;
+//        dd($singleNumMax,$data['goods_count_max'],$goodCate);
 
         /*---------------------------------------------------*/
         //下面开启元编程
@@ -107,7 +118,7 @@ class PlanController extends Controller
         $commondNum = "0";//最终购买商品的数量
         //循环层数为商品种类数
         foreach($price as $k=>$v){
-            $commondStart = $commondStart."for($variable=1;$variable<$singleNumMax;$variable++){";
+            $commondStart = $commondStart."for($variable=1;$variable <= $singleNumMax;$variable++){";
             $commondEnd = $commondEnd.'}';
             $commondSumMoney = $commondSumMoney."+$variable*$v";
             $commondNum = $commondNum."+{$variable}";
@@ -118,11 +129,12 @@ class PlanController extends Controller
         //总预算
         $pay = $data['pay']*100;
         //判断并处理
-        $judge = "if(($commondSumMoney) < $pay && ($commondNum) > $goods_count_min && ($commondNum) < $goods_count_max )".'{$result[]=["spend"=>'."$commondSumMoney".',"info"=>"'.$commondSNum.'"];}';
+        $judge = "if(($commondSumMoney) < $pay && ($commondNum) >= $goods_count_min && ($commondNum) <= $goods_count_max )".'{$result[]=["spend"=>'."$commondSumMoney".',"info"=>"'.$commondSNum.'"];}';
         //组装命令
         $commond = $commondStart.$judge.$commondEnd;
-//        dd($commond);
+//        echo $commond;
         eval($commond);
+
 
         if(count($result) == 0){
             return json_encode('没有可实施的采购计划！');
@@ -131,19 +143,25 @@ class PlanController extends Controller
         foreach($result as $k=>$temp){
             $reqHtml[$k]['spend']=$result[$k]['spend']/100;
             $sort = explode(',',$temp['info']);
+//            echo $temp['info']."<br>";
+
             for($i=0;$i<count($data['chk_value']);$i++){
                     $reqHtml[$k][]=[
                     $data['chk_value'][$i]=>$sort[$i+1],
                     ];
                 }
         }
+//        dd($sort);
 //        dd($data['chk_value'],$result);
 //        //单品约束条件
         $relCondition=array_filter($rel);
 //          dd($relCondition,$reqHtml,$price);
           $delFlag = false;
+          //条件的遍历
           foreach ($relCondition as $relsi){
-              $thisId = $relsi->master_good_id;
+              $thisId = $relsi->master_good_id; //商品id
+              $bl = $relsi->proportion;   //关联购买比例
+              //结果集的遍历
               foreach($reqHtml as $k=>$value){
                   for($i=0;$i<(count($value)-1);$i++){
                       $thiskey = array_keys($value[$i]);
@@ -157,23 +175,28 @@ class PlanController extends Controller
 //                          echo $thiskey[0]."--".$thisId."--".$num."--".$max."--".$min."<br>";
                           if($num > $max | $num < $min) {  $delFlag = true; }
                       }
+                      //如果有该比例条件约束
+                      if($bl != "/"){
+                          $blnum = 0;
+                          $r = '$blnum='."$bl;";
+                          eval($r);
+                          //关联比例是$blnum;
+                          if($thiskey[0] == $thisId) $masterNum = $num;
+                          if($thiskey[0] == $relsi->rel_good_id) $relNum =$num;
+                          if(!empty($masterNum) && !empty($relNum)){
+                              if($blnum !=  $masterNum/$relNum){ $delFlag = true; }
+                          }
+                      }
+
                   }
                   //如果单品条件不允许，那么就删除该元素
                   if($delFlag){ unset($reqHtml[$k]); $delFlag = false;}
               }
           }
-//          dd($reqHtml);
-//        //拼接返回信息
-//        $money = "花费".$reqHtml[count($reqHtml)-1]['spend']."元";
-//        $bestPlan = '';
-//        foreach($reqHtml[count($reqHtml)-1] as $key => $value){
-//            $bestPlan = $bestPlan+"购买";
-//        }
-//        $best = "<h4>最优解为：</h4>$money";
 
         $msg = "<a href='javascript:save()' class='form-control'>选择方案并保存</a>";
         foreach($reqHtml as $k=>$value){
-            $checkbox = "<input type='checkbox' name='success_plan' value='plan_$k' value=''>";
+            $checkbox = "<input type='radio' name='success_plan' value='plan_$k' value=''>";
             $msg = $msg."<h5>".$checkbox."&nbsp;&nbsp;可执行的采购方案".($k+1)."为：</h5><p id='plan_$k'>";
                 for($i=0;$i<(count($value)-1);$i++){
                     foreach($value[$i] as $kkk=>$vvv) {
@@ -188,7 +211,7 @@ class PlanController extends Controller
         $reaultHtml = "<p>$msg</p><br>";
         $script = "<script> ".
             "function save(){".
-            "var cn = '#'+$('input:checkbox[name=success_plan]:checked').val();".
+            "var cn = '#'+$('input:radio[name=success_plan]:checked').val();".
             "var post = $(cn).html();".
             " $.post('/plan/save',{plan:post},function(result){ alert('保存成功'); });".
             "}</script>";
