@@ -6,6 +6,7 @@ use App\Service\TxService;
 use App\Services\CommonService;
 use App\Store\GoodStore;
 use App\Store\PlanStore;
+use App\Store\ProgrammeStore;
 use App\Store\RelPlanStore;
 use Illuminate\Http\Request;
 
@@ -163,26 +164,51 @@ class PlanController extends Controller
 //        dd($data['chk_value'],$result);
 
         //拼接返回信息
-        $msg = "";
+        $msg = "<a href='javascript:save()' class='form-control'>选择方案并保存</a>";
         foreach($reqHtml as $k=>$value){
-            $msg = $msg."<h5>可执行的采购方案".($k+1)."为：</h5>";
+            $checkbox = "<input type='checkbox' name='success_plan' value='plan_$k' value=''>";
+            $msg = $msg."<h5>".$checkbox."&nbsp;&nbsp;可执行的采购方案".($k+1)."为：</h5><p id='plan_$k'>";
             foreach($value as $kk=>$vv){
                 foreach($vv as $kkk=>$vvv) {
                     $good = GoodStore::getFirst(['id' => $kkk]);
                 }
+
                 $msg =  $msg.$good->name."购买".$vvv."件 &nbsp;";
+
             }
-            $msg =  $msg."需花费".($result[$k]['spend']/100)."元<br>";
+
+            $msg =  $msg."需花费".($result[$k]['spend']/100)."元</p><br>";
         }
 
         /*---------------------------------------------------*/
         $reaultHtml = "<p>$msg</p><br>";
-        return json_encode($reaultHtml);
+        $script = "<script> ".
+            "function save(){".
+            "var cn = '#'+$('input:checkbox[name=success_plan]:checked').val();".
+            "var post = $(cn).html();".
+            " $.post('/plan/save',{plan:post},function(result){ alert('保存成功'); });".
+            "}</script>";
+        return json_encode($reaultHtml.$script);
 
+    }
 
+    /**
+     * @param Request $request
+     * @return string
+     * 保存计划方案
+     */
+    public function savePlan(Request $request){
 
+        $res = ProgrammeStore::programmeInsert(['programme'=>$request->plan]);
+        if($res){
+            return json_encode(1);
+        }
+        return json_encode(0);
+    }
 
-
+    public function programme(){
+        $data =ProgrammeStore::getAll();
+        return view('plan.programme', ['datas' => $data]);
     }
 
 

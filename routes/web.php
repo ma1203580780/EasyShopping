@@ -36,10 +36,13 @@ Route::group(['middleware' => 'UserMiddleware'], function () {
     Route::group(['namespace' => 'Plan'], function(){
 
     Route::resource('/plan','PlanController');
+    //创建计划
     Route::resource('/relPlan/create','PlanController@relCreate');
-    //递归测试
-    Route::resource('/digui/{forNum}/{$singleNumMax}/','PlanController@digui');
-        Route::resource('/di','PlanController@di');
+    //保存方案
+    Route::resource('/plan/save','PlanController@savePlan');
+    //方案列表
+    Route::get('/programme','PlanController@programme');
+
     });
 
 });

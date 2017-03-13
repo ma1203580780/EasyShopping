@@ -190,7 +190,7 @@
                 },
                 function(result){
                     var appendHtml = JSON.parse(result);
-                    $(".append-area").append(appendHtml);
+                    $(".append-area").html(appendHtml);
                 });
                     }
 
