@@ -62,7 +62,7 @@
                         @if(!empty($goods))
                         @foreach($goods as $key=>$data)
                             @if($key%4 === 0) <tr> @endif
-                            <td><input type="checkbox" name = 'goods_id' value="{{$data->id}}" id="goods_id"><span  title="{{$data->price/100}}元/件">{{$data->name}}  {{$data->price/100}}元/件</span>&nbsp;<a href="javascript:define(good_id='{{$data->id}}',good_name='{{$data->name}}')">define</a></td>
+                            <td><input type="checkbox" name = 'goods_id' value="{{$data->id}}" id="goods_id"  autocomplete ="off"><span  title="{{$data->price/100}}元/件">{{$data->name}}  {{$data->price/100}}元/件</span>&nbsp;<a href="javascript:define(good_id='{{$data->id}}',good_name='{{$data->name}}')">define</a></td>
                             @if($key%4 === 3) </tr> @endif
                         @endforeach
                     </tbody>
@@ -152,7 +152,14 @@
                      plan_guid:plan_guid,
                  },
                  function(result){
-                     $('.plan_guid').click();
+                     layer.closeAll();
+                     //清空单品弹层数据
+                     $('#good_min').attr("value","");
+                     $('#good_max').attr("value","");
+                     $('#master_good_num').attr("value","");
+                     $('#rel_good_num').attr("value","");
+                     $('#rel_good_id').attr("value","");
+
              });
 
          }

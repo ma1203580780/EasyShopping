@@ -87,8 +87,6 @@ class PlanController extends Controller
         if($yue < 0){
             return json_encode('预算不足以购买最低件数的指定商品！');
         }
-            //单品约束条件
-            $rel=array_filter($rel);
             //最大购买数
              $goods_count_max = empty($data['goods_count_max'])?10000000000:$data['goods_count_max'];
             //最小购买数
@@ -97,16 +95,7 @@ class PlanController extends Controller
             $goodCate = count($data['chk_value']);
             //因为已选商品至少买一件，因此单件商品最多购买数为
             $singleNumMax = $data['goods_count_max']+1-$goodCate;
-            //单件商品最小购买数为1
-//         dd($buyResult);
-         //每件商品购买的数量和价格
-//        foreach($buyResult as $k=>$v){
-//            $buyResult[$k]=array();
-//            for($i=0;$i<$singleNumMax;$i++){
-//                $buyResult[$k][$i] = $price[$k]*$i;
-//            }
-//        }
-//        dd($buyResult);
+
         /*---------------------------------------------------*/
         //下面开启元编程
         $commondStart = "";//for循环
@@ -129,30 +118,71 @@ class PlanController extends Controller
         $pay = $data['pay']*100;
         //判断并处理
         $judge = "if(($commondSumMoney) < $pay && ($commondNum) > $goods_count_min && ($commondNum) < $goods_count_max )".'{$result[]=["spend"=>'."$commondSumMoney".',"info"=>"'.$commondSNum.'"];}';
-            $commond = $commondStart.$judge.$commondEnd;
-//            dd($commond);
+
+
+//        //单品约束条件
+//        $relCondition=array_filter($rel);
+//
+//        dd($relCondition,$price);
+//        //如果单品约束条件不为空
+//        if(count($relCondition) > 0){
+//            $vari = '$j';
+//            //获得不同商品的顺序
+//            foreach($relCondition as $relInfo){
+//                $i = 0;
+//                foreach ($price as $key=>$value){
+//                    if( $relInfo->master_good_id == $key){
+//                        if($vari > $relInfo->good_count_min && $vari < $relInfo->good_count_max){
+//
+//                        }
+//                    }
+//                    $vari = $vari+'j';
+//                    $i++;
+//                }
+//            }
+//
+//        }
+
+        //组装命令
+        $commond = $commondStart.$judge.$commondEnd;
+//        dd($commond);
         eval($commond);
 
-        dd($result);
+        if(count($result) == 0){
+            return json_encode('没有可实施的采购计划！');
+        }
+        //组装good_id和采购数量的对应数组
+        foreach($result as $k=>$temp){
+            $sort = explode(',',$temp['info']);
+            for($i=0;$i<count($data['chk_value']);$i++){
+                    $reqHtml[$k][]=[
+                    $data['chk_value'][$i]=>$sort[$i+1],
+                    ];
+                }
+        }
+//        dd($data['chk_value'],$result);
 
+        //拼接返回信息
+        $msg = "";
+        foreach($reqHtml as $k=>$value){
+            $msg = $msg."<h5>可执行的采购方案".($k+1)."为：</h5>";
+            foreach($value as $kk=>$vv){
+                foreach($vv as $kkk=>$vvv) {
+                    $good = GoodStore::getFirst(['id' => $kkk]);
+                }
+                $msg =  $msg.$good->name."购买".$vvv."件 &nbsp;";
+            }
+            $msg =  $msg."需花费".($result[$k]['spend']/100)."元<br>";
+        }
 
         /*---------------------------------------------------*/
+        $reaultHtml = "<p>$msg</p><br>";
+        return json_encode($reaultHtml);
 
-    }
 
-    function tanxin($x,$totalweight=50)
-    {
-        $len=count($x);
-        $allprice=0;
-        for($i=1;$i<=$len;$i++){
-            if($x[$i]->weight>$totalweight) break;
-            else{
-                $allprice+=$x[$i]->price;
-                $totalweight=$totalweight-$x[$i]->weight;
-            }
-        }
-        if($i<$len) $allprice+=$x[$i]->price*($totalweight/$x[$i]->weight);
-        return $allprice;
+
+
+
     }
 
 
