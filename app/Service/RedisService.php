@@ -13,12 +13,6 @@ use Illuminate\Support\Facades\Redis;
 class RedisService
 {
 
-    private $newestArticlesUUIDlist = 'newestArticlesUUID';
-    private $searchKeywordDictPrefix = 'searchKeywordDict';
-    private $searchKeywordPrefix = 'searchKeyword';
-    private $newestArticlesHash = 'newestArticlesHash';
-    private $newestArticlesTotalNum = 100;
-
     /**
      * 有序集合增加
      * @param $key
@@ -152,16 +146,6 @@ class RedisService
         return Redis::STRLEN($key);
     }
 
-    /**
-     * @param $member
-     * remove from uuid list  and hash
-     * 从redis 队列中移除队首的元素,并从hash中移除
-     */
-    public function removeLastOfRedisList($member)
-    {
-        $this->removeLastOfUUIDlist($this->newestArticlesUUIDlist);
-        $this->removeFromHash($member);
-    }
 
 
     /**

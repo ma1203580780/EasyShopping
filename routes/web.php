@@ -1,8 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\DB;
-
 Route::group(['namespace' => 'User'], function(){
     //验证码
     Route::get('/code/captcha/{tmp}', 'UserController@captcha');
@@ -32,7 +29,8 @@ Route::group(['middleware' => 'UserMiddleware'], function () {
         //状态管理
         Route::post('/status/{id}/','GoodController@status');
     });
-    //计划
+
+    //采购计划
     Route::group(['namespace' => 'Plan'], function(){
 
     Route::resource('/plan','PlanController');
@@ -46,25 +44,6 @@ Route::group(['middleware' => 'UserMiddleware'], function () {
     });
 
 });
-
-
-
-
-
-
-
-
-////测试redis 缓存
-//Route::get('/555', function () {
-//    cache(['555'=>'666'],3);
-//    return cache('555');
-//});
-//
-////测试mysql
-//Route::get('/666', function () {
-//    $res = DB::table('users')->get();
-//    return $res;
-//});
 
 
 

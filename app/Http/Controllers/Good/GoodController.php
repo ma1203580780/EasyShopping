@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Good;
 
+use App\Service\RedisService;
 use App\Store\GoodStore;
 use App\Store\CateStore;
 use App\Store\UserStore;
@@ -61,9 +62,8 @@ class GoodController extends Controller
                 'name'=>$input['good_name'],
                 'price' =>$input['good_price']*100,
               ];
-
+            //存入数据库
             $result = GoodStore::goodInsert($param);
-
             if ($result) {
                 return Redirect('/good/create');
             }else{
@@ -81,9 +81,9 @@ class GoodController extends Controller
      */
     public function status($id)
     {
-        $good = GoodStore::getFirst(['id'=>$id]);
-        //更新后的状态
-        $up = $good->status == 1?2:1;
+        $blog = GoodStore::getFirst(['id'=>$id]);
+        //更新的状态
+        $up = $blog->status == 1?2:1;
         $re = GoodStore::GoodUpdate(['id'=>$id],['status'=>$up]);
         if($re){
             return $up;
