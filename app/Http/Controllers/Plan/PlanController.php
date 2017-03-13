@@ -107,7 +107,7 @@ class PlanController extends Controller
         $commondNum = "0";//最终购买商品的数量
         //循环层数为商品种类数
         foreach($price as $k=>$v){
-            $commondStart = $commondStart."for($variable=0;$variable<$singleNumMax;$variable++){";
+            $commondStart = $commondStart."for($variable=1;$variable<$singleNumMax;$variable++){";
             $commondEnd = $commondEnd.'}';
             $commondSumMoney = $commondSumMoney."+$variable*$v";
             $commondNum = $commondNum."+{$variable}";
@@ -119,31 +119,6 @@ class PlanController extends Controller
         $pay = $data['pay']*100;
         //判断并处理
         $judge = "if(($commondSumMoney) < $pay && ($commondNum) > $goods_count_min && ($commondNum) < $goods_count_max )".'{$result[]=["spend"=>'."$commondSumMoney".',"info"=>"'.$commondSNum.'"];}';
-
-
-//        //单品约束条件
-//        $relCondition=array_filter($rel);
-//
-//        dd($relCondition,$price);
-//        //如果单品约束条件不为空
-//        if(count($relCondition) > 0){
-//            $vari = '$j';
-//            //获得不同商品的顺序
-//            foreach($relCondition as $relInfo){
-//                $i = 0;
-//                foreach ($price as $key=>$value){
-//                    if( $relInfo->master_good_id == $key){
-//                        if($vari > $relInfo->good_count_min && $vari < $relInfo->good_count_max){
-//
-//                        }
-//                    }
-//                    $vari = $vari+'j';
-//                    $i++;
-//                }
-//            }
-//
-//        }
-
         //组装命令
         $commond = $commondStart.$judge.$commondEnd;
 //        dd($commond);
@@ -154,6 +129,7 @@ class PlanController extends Controller
         }
         //组装good_id和采购数量的对应数组
         foreach($result as $k=>$temp){
+            $reqHtml[$k]['spend']=$result[$k]['spend']/100;
             $sort = explode(',',$temp['info']);
             for($i=0;$i<count($data['chk_value']);$i++){
                     $reqHtml[$k][]=[
@@ -162,22 +138,50 @@ class PlanController extends Controller
                 }
         }
 //        dd($data['chk_value'],$result);
+//        //单品约束条件
+        $relCondition=array_filter($rel);
+//          dd($relCondition,$reqHtml,$price);
+          $delFlag = false;
+          foreach ($relCondition as $relsi){
+              $thisId = $relsi->master_good_id;
+              foreach($reqHtml as $k=>$value){
+                  for($i=0;$i<(count($value)-1);$i++){
+                      $thiskey = array_keys($value[$i]);
 
-        //拼接返回信息
+                      //当商品good_id相同时，比较采购数量
+                      $num =  (int)reset($value[$i]);
+                      $min = $relsi->good_count_min;
+                      $max = $relsi->good_count_max;
+
+                      if($thiskey[0] == $thisId){
+//                          echo $thiskey[0]."--".$thisId."--".$num."--".$max."--".$min."<br>";
+                          if($num > $max | $num < $min) {  $delFlag = true; }
+                      }
+                  }
+                  //如果单品条件不允许，那么就删除该元素
+                  if($delFlag){ unset($reqHtml[$k]); $delFlag = false;}
+              }
+          }
+//          dd($reqHtml);
+//        //拼接返回信息
+//        $money = "花费".$reqHtml[count($reqHtml)-1]['spend']."元";
+//        $bestPlan = '';
+//        foreach($reqHtml[count($reqHtml)-1] as $key => $value){
+//            $bestPlan = $bestPlan+"购买";
+//        }
+//        $best = "<h4>最优解为：</h4>$money";
+
         $msg = "<a href='javascript:save()' class='form-control'>选择方案并保存</a>";
         foreach($reqHtml as $k=>$value){
             $checkbox = "<input type='checkbox' name='success_plan' value='plan_$k' value=''>";
             $msg = $msg."<h5>".$checkbox."&nbsp;&nbsp;可执行的采购方案".($k+1)."为：</h5><p id='plan_$k'>";
-            foreach($value as $kk=>$vv){
-                foreach($vv as $kkk=>$vvv) {
-                    $good = GoodStore::getFirst(['id' => $kkk]);
-                }
-
-                $msg =  $msg.$good->name."购买".$vvv."件 &nbsp;";
-
+                for($i=0;$i<(count($value)-1);$i++){
+                    foreach($value[$i] as $kkk=>$vvv) {
+                        $good = GoodStore::getFirst(['id' => $kkk]);
+                    }
+                    $msg = $msg . $good->name . "购买" . $vvv . "件 &nbsp;";
             }
-
-            $msg =  $msg."需花费".($result[$k]['spend']/100)."元</p><br>";
+                 $msg =  $msg."需花费".($result[$k]['spend']/100)."元</p><br>";
         }
 
         /*---------------------------------------------------*/
