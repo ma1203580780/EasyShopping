@@ -62,7 +62,12 @@
                         @if(!empty($goods))
                         @foreach($goods as $key=>$data)
                             @if($key%4 === 0) <tr> @endif
-                            <td><input type="checkbox" name = 'goods_id' value="{{$data->id}}" id="goods_id"  autocomplete ="off"><span  title="{{$data->price/100}}元/件">{{$data->name}}  {{$data->price/100}}元/件</span>&nbsp;<a href="javascript:define(good_id='{{$data->id}}',good_name='{{$data->name}}')">define</a></td>
+                            <td>
+                                <input type="checkbox" name = 'goods_id' value="{{$data->id}}" class="goods_id"  autocomplete ="off">
+                                <span  title="{{$data->price/100}}元/件">{{$data->name}}  {{$data->price/100}}元/件</span>
+                                &nbsp;
+                                <a href="javascript:define(good_id='{{$data->id}}',good_name='{{$data->name}}')" class="dehide" id="define_{{$data->id}}">define</a>
+                            </td>
                             @if($key%4 === 3) </tr> @endif
                         @endforeach
                     </tbody>
@@ -96,7 +101,21 @@
     <script src="{{asset('/dist/js/jquery.js')}}"></script>
     <script src="{{asset('/dist/js/layer.js')}}"></script>
     <script>
-//   /*单个商品定义*/
+        $("input[name='goods_id']").click(function(){
+            if (this.checked) {
+                $(this).next().next().show();
+            }
+            else {
+                $(this).next().next().hide();
+            }
+        });
+        $(function(){
+           $(".dehide").hide();
+        });
+
+
+
+        //   /*单个商品定义*/
     function define(good_id,good_name) {
         //关联商品的列表
         var goods = "<select id ='rel_good_id'>" +
@@ -177,7 +196,11 @@
             $('input[name="goods_id"]:checked').each(function(){
                 chk_value.push($(this).val());
             });
-//            alert(chk_value.length==0 ?'你还没有选择任何商品！':chk_value);
+            if(chk_value.length==0){
+                alert('还没有选择任何商品！');
+                return false;
+            }
+
 
             $.post(
                 "/plan",

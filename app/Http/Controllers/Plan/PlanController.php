@@ -143,7 +143,7 @@ class PlanController extends Controller
         }
         //组装good_id和采购数量的对应数组
         foreach($result as $k=>$temp){
-            $reqHtml[$k]['spend']=$result[$k]['spend']/100;
+            $reqHtml[$k]['spend']=$result[$k]['spend'];
             $sort = explode(',',$temp['info']);
 
             for($i=0;$i<count($data['chk_value']);$i++){
@@ -154,10 +154,39 @@ class PlanController extends Controller
         }
         //单品约束筛选
         $reqHtml = $this->singleCont($rel, $reqHtml);
+        //结果集降序排序
+        $sortReqHtml = $this->sort($reqHtml);
         //返回view内容
-        $html = $this->makeHTML($reqHtml,$result);
+        $html = $this->makeHTML($sortReqHtml);
         return json_encode($html);
     }
+
+    /**
+     * @param $b
+     * @return array|bool
+     * 排序算法
+     */
+    public function sort($b){
+        //判断参数是否是一个数组
+        if(!is_array($b)) return false;
+        foreach ($b as $k){
+            $new[] = $k;
+        }
+        $len=count($new);
+        for($k=0;$k<=$len;$k++){
+            for($j=$len-1;$j>$k;$j--){
+
+                    if($new[$j]>$new[$j-1]){
+                        $temp = $new[$j];
+                        $new[$j] = $new[$j-1];
+                        $new[$j-1] = $temp;
+                    }
+                }
+            }
+            return $new;
+    }
+
+
 
 
     /**
@@ -212,7 +241,7 @@ class PlanController extends Controller
      * @return string
      * 拼接返回的视图代码
      */
-    public function makeHTML($reqHtml,$result)
+    public function makeHTML($reqHtml)
     {
         $msg = "<a href='javascript:save()' class='form-control'>选择方案并保存</a>";
         foreach($reqHtml as $k=>$value){
@@ -224,7 +253,7 @@ class PlanController extends Controller
                 }
                 $msg = $msg . $good->name . "购买" . $vvv . "件 &nbsp;";
             }
-            $msg =  $msg."需花费".($result[$k]['spend']/100)."元</p><br>";
+            $msg =  $msg."需花费".($reqHtml[$k]['spend']/100)."元</p><br>";
         }
 
         $reaultHtml = "<p>$msg</p><br>";
