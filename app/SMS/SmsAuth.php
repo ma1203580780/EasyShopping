@@ -11,8 +11,8 @@ class smsAuth {
     public function smsAuth($action, $phone)
     {
         //阿里大鱼的两个key
-        $appkey='23672242';
-        $secretkey='3cdae461d260249d39dee509887edee2';
+        $appkey = env('SMS_KEY','');
+        $secretkey = env('SMS_SECRET','');
         //创建短信验证类
         $alisms = new \App\SMS\AliSms($appkey, $secretkey, '', '');
         //生成随机的验证码
