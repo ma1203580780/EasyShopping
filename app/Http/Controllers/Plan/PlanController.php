@@ -186,9 +186,6 @@ class PlanController extends Controller
             return $new;
     }
 
-
-
-
     /**
      * @param $rel
      * @param array $reqHtml
